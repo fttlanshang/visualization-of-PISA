@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<title>Visualization of PISA Dataset</title>
+	<style>
+		
+	</style>
+</head>
+<body>
+	<h2>Visualization of PISA in 2012</h2>
+	<script>
+		var draw = function(geo_data) {
+			"use strict";
+			var margin = 0,
+            	width = 1250 - margin,
+            	height = 500 - margin;
+
+            var svg = d3.select('body')
+            			.append('svg')
+            			.attr("width", width + margin)
+            			.attr("height", height + margin)
+            			.append('g')
+            			.attr("class", "map");
+
+            // can use other projections as well!!
+            var projection = d3.geoMercator()
+            					.scale(120)
+          						.translate([width / 2, height / 1.4]);
+
+            var path = d3.geoPath().projection(projection);
+
+            var map = svg.selectAll("path")
+            			.data(geo_data.features)
+            			.enter()
+            			.append("path")
+            			.attr("d", path)
+            			.attr("fill", "lightBlue")
+            			.attr("stroke", "black")
+            			.attr("stroke-width", 0.5);
+
+		};
+		d3.json("world_countries.json", draw);
+	</script>
+</body>
+</html>
