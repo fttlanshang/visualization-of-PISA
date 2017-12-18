@@ -1,0 +1,23 @@
+# coding: utf-8
+get_ipython().magic(u'run get_concerned_countries.py')
+math_distribution = sns.violinplot(x="CNT", y = "PV1MATH", data = pisa2012_concerned_asian_countries)
+math_distribution.draw()
+math_distribution
+plt.show()
+math_distribution_whole = sns.violinplot(x="CNT", y = "PV1MATH")
+math_distribution_whole = sns.violinplot(x="CNT", y = "PV1MATH", data = pisa2012)
+plt.show()
+pisa2012["CNT"].nunique
+pisa2012["CNT"].nunique()
+sns.boxplot(x="CNT", y = "PV1MATH", data = pisa2012_concerned_asian_countries)
+plt.show()
+sns.boxplot(x="CNT", y = "PV1MATH", hue="ST04Q01", data = pisa2012_concerned_asian_countries)
+plt.show()
+sns.boxplot(x="CNT", y = "PV1READ", hue="ST04Q01", data = pisa2012_concerned_asian_countries)
+plt.show()
+sns.boxplot(x="CNT", y = "PV1SCIE", hue="ST04Q01", data = pisa2012_concerned_asian_countries)
+plt.show()
+sns.violinplot(x="CNT", y = "PV1SCIE", hue="ST04Q01", data = pisa2012_concerned_asian_countries)
+plt.show()
+sns.boxplot(x="CNT", y = "PV1SCIE", hue="ST04Q01", data = pisa2012_concerned_asian_countries)
+plt.show()
