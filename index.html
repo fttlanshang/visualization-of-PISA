@@ -5,22 +5,90 @@
 	<script src="https://d3js.org/d3.v4.min.js"></script>
 	<title>Visualization of PISA Dataset</title>
 	<style>
-		
+		body{
+			display: relative;
+		}
+		h2 {
+			text-align: center;
+		}
+		#grid {
+			float: left;
+			width: 260px;
+		}
+		#map {
+
+		}
+
 	</style>
 </head>
 <body>
 	<h2>Visualization of PISA in 2012</h2>
+	<div id="grid"></div>
+	<div id="map_container"></div>
 	<script>
+		var generate_grid_data = function() {
+			var data = new Array();
+			var xpos = 1,
+				ypos = 1,
+				width = 50,
+				height = 50,
+				n = 3;
+			var color_array = [["#fba165", "#f65c40","#bd2828"], 
+								["#bed0f4", "#8ba6e9", "#0f61a0"],
+								["#9ad6b1","#8cd480", "#3c9a55"]];
+			for(var i = 0; i < n; i++) {
+				data[i] = new Array();
+				for(var j = 0; j < n; j++) {
+					data[i][j] = {
+						x: xpos,
+						y: ypos,
+						width: width,
+						height: height,
+						color: color_array[i][j]
+					};
+					xpos += width;
+				}
+				xpos = 1;
+				ypos += height;
+			}
+			return data;
+		};
+		var draw_color_matrix = function() {
+			var position_data = generate_grid_data(); 
+			var grid = d3.select("#grid")
+						.append("svg")
+						.attr("width", "260px")
+						.attr("height", "260px");
+			var row = grid.selectAll('.row')
+						.data(position_data)
+						.enter().append("g")
+						.attr("class", "row");
+			var column = row.selectAll('.cell')
+							.data(function(d) { return d;})
+							.enter().append('rect')
+							.attr("class", "cell")
+							.attr("x", function(d) { return d.x;})
+							.attr("y", function(d) { return d.y; })
+							.attr("width", function(d) { return d.width;})
+							.attr("height", function(d){ return d.height;})
+							.style("fill", function(d) { return d.color;});
+		}
 		var draw = function(geo_data) {
 			"use strict";
+			draw_color_matrix();
 			var margin = 0,
             	width = 1250 - margin,
             	height = 500 - margin;
 
-            var svg = d3.select('body')
+            var svg = d3.select('#map_container')
             			.append('svg')
+            			// .attr("width", "100%")
+            			// .attr("height", "100%")
             			.attr("width", width + margin)
             			.attr("height", height + margin)
+            			.call(d3.zoom().on("zoom", function () {
+						    svg.attr("transform", d3.event.transform)
+						}))
             			.append('g')
             			.attr("class", "map");
 
@@ -30,15 +98,45 @@
           						.translate([width / 2, height / 1.4]);
 
             var path = d3.geoPath().projection(projection);
-
+            // debugger;
             var map = svg.selectAll("path")
             			.data(geo_data.features)
             			.enter()
             			.append("path")
             			.attr("d", path)
-            			.attr("fill", "lightBlue")
+            			.attr("fill", "orange")
             			.attr("stroke", "black")
             			.attr("stroke-width", 0.5);
+
+            var fill_countries = function(data) {
+            	var countries = data.map(function(d) {
+            		return d["CNT"];
+            	});
+            	var invalid_countries = [];
+            	var valid_countries = [];
+            	// now I want to figure out the invalid country names.
+            	d3.selectAll("path")
+            	  .attr("fill", function(d) {
+            	  	var index = countries.indexOf(d.properties.name);
+            	  	if(index == -1) {
+            	  		return "white";
+            	  	} else {
+            	  		valid_countries.push(d.properties.name); 
+            	  		// thinks this makes things right! Because when delete items, indexes get complex.
+            	  		return "lightBlue";
+            	  	}
+            	  });
+            	for(var i = 0; i < countries.length; i++) {
+            		if(valid_countries.indexOf(countries[i]) == -1) {
+            			invalid_countries.push(countries[i]);
+            		}
+            	}
+            	console.log("valid: ",valid_countries)
+            	console.log("invalid: ",invalid_countries);
+            };
+
+            d3.csv("INFO_PISA2012.csv", fill_countries);
+
 
 		};
 		d3.json("world_countries.json", draw);
