@@ -26,16 +26,20 @@
 	<div id="grid"></div>
 	<div id="map_container"></div>
 	<script>
+		// var color_array = [["#9ad6b1","#8cd480", "#3c9a55"],
+		// 					["#bed0f4", "#8ba6e9", "#0f61a0"],
+		// 					// ["#fba165", "#f65c40","#bd2828"]];
+		var color_array = [["rgb(233, 0, 90)", "rgb(161, 0, 89)", "rgb(0, 0, 89)"], 
+							// this line is for high math performance
+							["rgb(236, 165, 190)", "rgb(160, 165, 190)", "rgb(0, 166, 189)"],
+							["rgb(223, 223, 223)", "rgb(161, 228, 223)", "rgb(0, 219, 188)"]]//the last line is for low math performance
 		var generate_grid_data = function() {
 			var data = new Array();
-			var xpos = 1,
-				ypos = 1,
+			var xpos = 50,
+				ypos = 30,
 				width = 50,
 				height = 50,
 				n = 3;
-			var color_array = [["#fba165", "#f65c40","#bd2828"], 
-								["#bed0f4", "#8ba6e9", "#0f61a0"],
-								["#9ad6b1","#8cd480", "#3c9a55"]];
 			for(var i = 0; i < n; i++) {
 				data[i] = new Array();
 				for(var j = 0; j < n; j++) {
@@ -48,17 +52,18 @@
 					};
 					xpos += width;
 				}
-				xpos = 1;
+				xpos = 50;
 				ypos += height;
 			}
 			return data;
 		};
 		var draw_color_matrix = function() {
 			var position_data = generate_grid_data(); 
+			var width = 260;
 			var grid = d3.select("#grid")
 						.append("svg")
-						.attr("width", "260px")
-						.attr("height", "260px");
+						.attr("width", width)
+						.attr("height", width);
 			var row = grid.selectAll('.row')
 						.data(position_data)
 						.enter().append("g")
@@ -72,6 +77,43 @@
 							.attr("width", function(d) { return d.width;})
 							.attr("height", function(d){ return d.height;})
 							.style("fill", function(d) { return d.color;});
+
+			var marker = grid.append("defs").append("marker")
+			    .attr("id", "arrow")
+			    .attr("refX", 2)
+			    .attr("refY", 6)
+			    .attr("markerWidth", 13)
+			    .attr("markerHeight", 13)
+			    .attr("orient", "auto")
+			    .append("path")
+			    .attr("d", "M2,2 L2,11 L10,6 L2,2")
+			    .style("stroke", "black");
+
+			// this explanation is for math performance
+			grid.append("text")
+				.attr("x", 1)
+				.attr('y', 20)
+				.html("high math performance");
+			grid.append("line")
+				.attr("x1", 20 )
+				.attr("y1", 180 )
+				.attr("x2", 20 )
+				.attr("y2", 35)
+				.attr("stroke", "gray")
+				.attr("marker-end", "url(#arrow)");
+
+			// this explanation is for relationship strength
+			grid.append("text")
+				.attr("x", 160)
+				.attr("y", 200)
+				.text("high equity");
+			grid.append("line")
+				.attr("x1", 30)
+				.attr("y1", 210)
+				.attr("x2", 200)
+				.attr("y2", 210 )
+				.attr("stroke", "gray")
+				.attr("marker-end", "url(#arrow)");
 		}
 		var draw = function(geo_data) {
 			"use strict";
@@ -98,7 +140,6 @@
           						.translate([width / 2, height / 1.4]);
 
             var path = d3.geoPath().projection(projection);
-            // debugger;
             var map = svg.selectAll("path")
             			.data(geo_data.features)
             			.enter()
@@ -115,15 +156,23 @@
             	var invalid_countries = [];
             	var valid_countries = [];
             	// now I want to figure out the invalid country names.
-            	d3.selectAll("path")
+            	svg.selectAll("path")
             	  .attr("fill", function(d) {
+            	  	debugger;
             	  	var index = countries.indexOf(d.properties.name);
             	  	if(index == -1) {
             	  		return "white";
             	  	} else {
+            	  		var country_pisa = data[index];
+            	  		var color_math_index = 3 - parseInt(country_pisa["MATH_INDEX"]);
+            	  		// here is a little confusing, since in the .csv file, 3 means better math performance and 1 means poor math performances
+            	  		//but here the first array in 2D-color-array represents better math performance
+            	  		var color_strength_index = parseInt(country_pisa["RELATION_INDEX"]) - 1;
+            	  		//in .csv file, 1 means strong relation between math performance and social-economic status, that is "less equity"
+            	  		// this is consistent with the 2D-color-array, because the left(small index) means less equity
             	  		valid_countries.push(d.properties.name); 
-            	  		// thinks this makes things right! Because when delete items, indexes get complex.
-            	  		return "lightBlue";
+            	  		var color = color_array[color_math_index][color_strength_index];
+            	  		return color;
             	  	}
             	  });
             	for(var i = 0; i < countries.length; i++) {
@@ -131,7 +180,6 @@
             			invalid_countries.push(countries[i]);
             		}
             	}
-            	console.log("valid: ",valid_countries)
             	console.log("invalid: ",invalid_countries);
             };
 

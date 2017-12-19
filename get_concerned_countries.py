@@ -43,7 +43,18 @@ pisa2012 = pisa2012[["CNT","SUBNATIO","STRATUM","OECD","NC","SCHOOLID","STIDSTD"
 
 #########Thinks comparing only 3 contries is not enough###################################################
 
+## delete city information, because they are so hard to show on the map!
+pisa2012 = pisa2012[pisa2012["CNT"] != "Perm(Russian Federation)"]
+pisa2012 = pisa2012[pisa2012["CNT"] != "Florida (USA)"]
 
+##before melt, change Shanghai/Hong Kong etc to China, 
+## so all the records will aggregate together
+# it is suggested not to assign variables with chaining
+# http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy
+pisa2012.loc[pisa2012["CNT"] == "China-Shanghai","CNT"] = "China"
+pisa2012.loc[pisa2012["CNT"] == "Hong Kong-China","CNT"] = "China"
+pisa2012.loc[pisa2012["CNT"] == "Macao-China","CNT"] = "China"
+pisa2012.loc[pisa2012["CNT"] == "Chinese Taipei","CNT"] = "China"
 
 
 ###############Below is for calculating mean for each country################
@@ -128,6 +139,7 @@ INFO = pd.merge(INFO, CNT_GENDER_MATH_MEAN,
 	how="left", on="CNT")
 
 
+
 def draw_scatter_plot(var):
 	plt.scatter(x = var, y = "MATH_MEAN", data = INFO)
 	y_mean = INFO["MATH_MEAN"].mean()
@@ -137,7 +149,36 @@ def draw_scatter_plot(var):
 	plt.savefig(var + "_math.png")
 	plt.show()
 
-draw_scatter_plot('MATH_GENDER_GAP')
+# draw_scatter_plot('MATH_GENDER_GAP')
+
+## divide these countries into 9 groups according to relative rank
+## position by math_mean and relation_strength
+first_slice = len(INFO["CNT"]) / 3
+second_slice = first_slice * 2
+third_slice = len(INFO["CNT"]) - 1
+# notes when using df.loc[,],contrary to usual python slices,
+# both the start and the stop are included!
+# https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.loc.html
+INFO = INFO.sort_values("MATH_MEAN")    
+# INFO.iloc[0:first_slice]["MATH_MEAN"] = 1
+# don't use above line of code to assign values
+INFO.loc[0:first_slice,"MATH_INDEX"] = 1
+INFO.loc[first_slice + 1:second_slice, "MATH_INDEX"] = 2
+INFO.loc[second_slice + 1:third_slice, "MATH_INDEX"] = 3
+
+INFO = INFO.sort_values("strength", ascending=False)
+
+INFO.loc[0:first_slice, "RELATION_INDEX"] = 1
+INFO.loc[first_slice + 1:second_slice, "RELATION_INDEX"] = 2
+INFO.loc[second_slice + 1:third_slice, "RELATION_INDEX"] = 3
+
+# why NaN values for index == 1 or 2???
+
+
+len(INFO[INFO["RELATION_INDEX"] == 2])
+len(INFO[INFO["RELATION_INDEX"] == 1])
+len(INFO[INFO["RELATION_INDEX"] == 3])
+
 INFO.to_csv("INFO_PISA2012.csv")
        
 
