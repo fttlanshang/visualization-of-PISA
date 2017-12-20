@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from sklearn import linear_model
 
 pisa2012 = pd.read_csv('pisa2012.csv')
 pisa2012 = pisa2012[["CNT","SUBNATIO","STRATUM","OECD","NC","SCHOOLID","STIDSTD",
@@ -45,7 +46,7 @@ pisa2012 = pisa2012[["CNT","SUBNATIO","STRATUM","OECD","NC","SCHOOLID","STIDSTD"
 
 ## delete city information, because they are so hard to show on the map!
 pisa2012 = pisa2012[pisa2012["CNT"] != "Perm(Russian Federation)"]
-pisa2012 = pisa2012[pisa2012["CNT"] != "Florida (USA)"]
+# pisa2012 = pisa2012[pisa2012["CNT"] != "Florida (USA)"]
 
 ##before melt, change Shanghai/Hong Kong etc to China, 
 ## so all the records will aggregate together
@@ -153,32 +154,43 @@ def draw_scatter_plot(var):
 
 ## divide these countries into 9 groups according to relative rank
 ## position by math_mean and relation_strength
+INFO["MATH_INDEX"] = 0
+INFO["RELATION_INDEX"] = 0
 first_slice = len(INFO["CNT"]) / 3
 second_slice = first_slice * 2
-third_slice = len(INFO["CNT"]) - 1
+third_slice = len(INFO["CNT"])
 # notes when using df.loc[,],contrary to usual python slices,
 # both the start and the stop are included!
 # https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.loc.html
-INFO = INFO.sort_values("MATH_MEAN")    
-# INFO.iloc[0:first_slice]["MATH_MEAN"] = 1
-# don't use above line of code to assign values
-INFO.loc[0:first_slice,"MATH_INDEX"] = 1
-INFO.loc[first_slice + 1:second_slice, "MATH_INDEX"] = 2
-INFO.loc[second_slice + 1:third_slice, "MATH_INDEX"] = 3
 
 INFO = INFO.sort_values("strength", ascending=False)
 
-INFO.loc[0:first_slice, "RELATION_INDEX"] = 1
-INFO.loc[first_slice + 1:second_slice, "RELATION_INDEX"] = 2
-INFO.loc[second_slice + 1:third_slice, "RELATION_INDEX"] = 3
+INFO.iloc[0:first_slice, 6] = 1
+INFO.iloc[first_slice:second_slice, 6] = 2
+INFO.iloc[second_slice:third_slice, 6] = 3
 
-# why NaN values for index == 1 or 2???
+# len(INFO[INFO["RELATION_INDEX"] == 2])
+# len(INFO[INFO["RELATION_INDEX"] == 1])
+# len(INFO[INFO["RELATION_INDEX"] == 3])
 
-
-len(INFO[INFO["RELATION_INDEX"] == 2])
-len(INFO[INFO["RELATION_INDEX"] == 1])
-len(INFO[INFO["RELATION_INDEX"] == 3])
+INFO = INFO.sort_values("MATH_MEAN", ascending = False)    
+# INFO.iloc[0:first_slice]["MATH_MEAN"] = 1
+# don't use above line of code to assign values
+# INFO.loc[second_slice + 1:third_slice, "MATH_INDEX"] = 3 
+#loc is used for labels of index, not position
+#maybe I can use the score to divide into three groups!!!!!!!!!!!!!!!!!!!!!!!
+INFO.iloc[0:first_slice,5] = 3
+INFO.iloc[first_slice:second_slice, 5] = 2
+INFO.iloc[second_slice:third_slice, 5] = 1
 
 INFO.to_csv("INFO_PISA2012.csv")
-       
 
+
+america_pisa = pisa2012[pisa2012["CNT"] == "United States of America"][["ESCS", "MATH"]]
+america_pisa = america_pisa.dropna()
+america_pisa_sample = america_pisa.sample(n = 500)
+x = np.array(america_pisa_sample["ESCS"])
+y = np.array(america_pisa_sample["MATH"])
+slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+america_pisa_sample["predict"] = america_pisa_sample["ESCS"] * slope + intercept
+america_pisa_sample.to_csv('america_pisa_sample.csv')

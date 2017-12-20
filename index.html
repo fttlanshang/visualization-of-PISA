@@ -2,43 +2,116 @@
 <html>
 <head>
 	<meta charset="utf-8">
+	<link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
 	<script src="https://d3js.org/d3.v4.min.js"></script>
-	<title>Visualization of PISA Dataset</title>
+	<title>How well can math score be predicted by social-economic status in different countries? --Education and Equity</title>
 	<style>
-		body{
-			display: relative;
+		body {
+			font-family: 'Nunito', sans-serif;
 		}
 		h2 {
 			text-align: center;
 		}
-		#grid {
-			float: left;
-			width: 260px;
+		main {
+			display: block;
+			position: relative;
+			width: 100%;
 		}
-		#map {
+		#grid {
+			position: absolute;
+			width: 260px;
+			left: 0;
+			top: 300px;
+		}
+		div.left {
+			position: absolute;
+			/*float: left;*/
+			display: block;
+			/*position: relative;*/
+			left: 0;
+			width: calc(9 / 16 * 100vw);
+		}
+		#map_container svg {
+			border: 1px solid black;
+		}
+		div.right {
+			/*float: right;*/
+			position: absolute;
+			left: calc(9.5 / 16 * 100vw);
+			display: block;
+		}
+		#barchart_container:after {
+			clear: both;
+		}
+		.tooltip {   
+			position: absolute;           
+			text-align: left;           
+			width: 250px;                  
+			height: 100px;                 
+			padding: 2px;             
+			font-size: 14px;        
+			background: #ffffff;   
+			border: 1px solid gray;      
+			border-radius: 8px;           
+			pointer-events: none; 
+			opacity: 0.4;
+		} 
+		.line {
+		    fill: none;
+		    stroke: black;
+		    stroke-width: 5;
+		}
 
+		.axis text {
+		    font-size: 12px;
+		}
+		circle {
+			opacity: 0.9;
+		}
+		#conclusion {
+			/*clear: both;*/
+			/*float: left;*/
 		}
 
 	</style>
 </head>
 <body>
 	<h2>Visualization of PISA in 2012</h2>
-	<div id="grid"></div>
-	<div id="map_container"></div>
+	<main>
+		<div class="left">
+			<div id="grid"></div>
+			<div id="map_container"></div>
+			<div id="conclusion"></div>
+			<div id="scatter_container"></div>
+		</div>
+		<div class="right">
+			<div id="barchart_container"></div>
+		</div>
+		
+		
+	</main>
 	<script>
+		//reference: https://stackoverflow.com/questions/16265123/resize-svg-when-window-is-resized-in-d3-js
+		var w = window,
+		    d = document,
+		    e = d.documentElement,
+		    g = d.getElementsByTagName('body')[0],
+		    window_x = w.innerWidth || e.clientWidth || g.clientWidth,
+		    window_y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
 		// var color_array = [["#9ad6b1","#8cd480", "#3c9a55"],
 		// 					["#bed0f4", "#8ba6e9", "#0f61a0"],
 		// 					// ["#fba165", "#f65c40","#bd2828"]];
-		var color_array = [["rgb(233, 0, 90)", "rgb(161, 0, 89)", "rgb(0, 0, 89)"], 
+		const color_array = [["rgb(233, 0, 90)", "rgb(161, 0, 89)", "rgb(0, 0, 89)"], 
 							// this line is for high math performance
 							["rgb(236, 165, 190)", "rgb(160, 165, 190)", "rgb(0, 166, 189)"],
 							["rgb(223, 223, 223)", "rgb(161, 228, 223)", "rgb(0, 219, 188)"]]//the last line is for low math performance
 		var generate_grid_data = function() {
 			var data = new Array();
-			var xpos = 50,
+			var xpos = 40,
 				ypos = 30,
-				width = 50,
-				height = 50,
+				width = 40,
+				height = 40,
 				n = 3;
 			for(var i = 0; i < n; i++) {
 				data[i] = new Array();
@@ -52,14 +125,14 @@
 					};
 					xpos += width;
 				}
-				xpos = 50;
+				xpos = 40;
 				ypos += height;
 			}
 			return data;
 		};
 		var draw_color_matrix = function() {
 			var position_data = generate_grid_data(); 
-			var width = 260;
+			var width = 200;
 			var grid = d3.select("#grid")
 						.append("svg")
 						.attr("width", width)
@@ -91,43 +164,41 @@
 
 			// this explanation is for math performance
 			grid.append("text")
-				.attr("x", 1)
+				.attr("x", -180)
 				.attr('y', 20)
-				.html("high math performance");
+				.text("higher math score")
+				.attr("transform", "rotate(-90)");
 			grid.append("line")
-				.attr("x1", 20 )
+				.attr("x1", 30 )
 				.attr("y1", 180 )
-				.attr("x2", 20 )
+				.attr("x2", 30 )
 				.attr("y2", 35)
 				.attr("stroke", "gray")
 				.attr("marker-end", "url(#arrow)");
 
 			// this explanation is for relationship strength
 			grid.append("text")
-				.attr("x", 160)
-				.attr("y", 200)
-				.text("high equity");
+				.attr("x", 75)
+				.attr("y", 175)
+				.text("greater equity");
 			grid.append("line")
-				.attr("x1", 30)
-				.attr("y1", 210)
-				.attr("x2", 200)
-				.attr("y2", 210 )
+				.attr("x1", 50)
+				.attr("y1", 180)
+				.attr("x2", 180)
+				.attr("y2", 180 )
 				.attr("stroke", "gray")
 				.attr("marker-end", "url(#arrow)");
 		}
 		var draw = function(geo_data) {
 			"use strict";
 			draw_color_matrix();
-			var margin = 0,
-            	width = 1250 - margin,
-            	height = 500 - margin;
+			var map_width = 9 / 16 * window_x,
+            	map_height = 500;
 
             var svg = d3.select('#map_container')
             			.append('svg')
-            			// .attr("width", "100%")
-            			// .attr("height", "100%")
-            			.attr("width", width + margin)
-            			.attr("height", height + margin)
+            			.attr("width", map_width)
+            			.attr("height", map_height)
             			.call(d3.zoom().on("zoom", function () {
 						    svg.attr("transform", d3.event.transform)
 						}))
@@ -135,9 +206,10 @@
             			.attr("class", "map");
 
             // can use other projections as well!!
+            // need to change here!!!!!!!!!!!!!!!
             var projection = d3.geoMercator()
             					.scale(120)
-          						.translate([width / 2, height / 1.4]);
+          						.translate([map_width / 2, map_height / 1.4]);
 
             var path = d3.geoPath().projection(projection);
             var map = svg.selectAll("path")
@@ -146,44 +218,234 @@
             			.append("path")
             			.attr("d", path)
             			.attr("fill", "orange")
-            			.attr("stroke", "black")
+            			.attr("stroke", "gray")
             			.attr("stroke-width", 0.5);
-
+           	
             var fill_countries = function(data) {
+            	var draw_bar_chart = function(data) {
+	           		var chart_width = 6 / 16 * window_x,
+	           			barheight = 20;
+	           		var x = d3.scaleLinear()
+	           					.domain([0, d3.max(data, function(d) {
+	           						return d["MATH_MEAN"];
+	           					})])
+	           					.range([0, chart_width - 150]);
+	           		var barchart = d3.select("#barchart_container")
+				           			.append("svg")
+				           			.attr("width", chart_width)
+				           			.attr("height", barheight * (data.length + 2))
+				           			.append("g")
+				           			.attr("class", "barchart");
+			        var bar = barchart.selectAll("g")
+			        					.data(data)
+			        					.enter().append("g")
+			        					.attr("transform", function(d, i) {
+			        						return "translate(100," + (i + 2) * barheight + ")";
+			        					});
+			        bar.append("rect")
+			        	.attr("height", barheight - 2.5)
+			        	.attr("width", function(d) { return x(d["MATH_MEAN"]); })
+			        	.attr("fill", "#c9a288");
+			        bar.append("text")
+			        	.attr("x", -100)
+			        	.attr("y", barheight / 2)
+			        	.attr("dy", "0.35em")
+			        	.text(function(d) { return d["CNT"]; })
+			        	.style("font-size", "12px")
+			        	.style("text-anchor", "right");
+			        bar.append("text")
+			        	.attr("x", function(d) { return x(d["MATH_MEAN"]) - 50;})
+			        	.attr("y", barheight / 2)
+			        	.attr("dy", "0.35em")
+			        	.text(function(d){ return Number(d["MATH_MEAN"]).toFixed(2);})
+			        	.style("font-size", "12px")
+			        	.style("color", "white");
+			        barchart.append("text")
+			        	.attr("x", 100)
+			        	.attr("y", 20)
+			        	.text("Mean Math Score in Each Country")
+			        	.style("font-size", "16px");
+	           	}
+            	draw_bar_chart(data);
             	var countries = data.map(function(d) {
             		return d["CNT"];
             	});
             	var invalid_countries = [];
             	var valid_countries = [];
             	// now I want to figure out the invalid country names.
-            	svg.selectAll("path")
-            	  .attr("fill", function(d) {
-            	  	debugger;
+            	var path = svg.selectAll("path")
+            		.attr("stroke", "gray")
+            		.attr("stroke-width", 0.5)
+            	  	.attr("fill", function(d) {
+	            	  	var index = countries.indexOf(d.properties.name);
+	            	  	if(index == -1) {
+	            	  		return "white";
+	            	  	} else {
+	            	  		var country_pisa = data[index];
+	            	  		var color_math_index = 3 - parseInt(country_pisa["MATH_INDEX"]);
+	            	  		// here is a little confusing, since in the .csv file, 3 means better math performance and 1 means poor math performances
+	            	  		//but here the first array in 2D-color-array represents better math performance
+	            	  		var color_strength_index = parseInt(country_pisa["RELATION_INDEX"]) - 1;
+	            	  		//in .csv file, 1 means strong relation between math performance and social-economic status, that is "less equity"
+	            	  		// this is consistent with the 2D-color-array, because the left(small index) means less equity
+	            	  		valid_countries.push(d.properties.name); 
+	            	  		var color = color_array[color_math_index][color_strength_index];
+	            	  		return color;
+            	  		}
+            		});
+            	// for(var i = 0; i < countries.length; i++) {
+            	// 	if(valid_countries.indexOf(countries[i]) == -1) {
+            	// 		invalid_countries.push(countries[i]);
+            	// 	}
+            	// }
+            	// console.log("invalid: ",invalid_countries);
+            	var tooltip = d3.select("body")
+            					.append("div")
+            					.attr("class", "tooltip")
+            					.style("opacity", 0);
+
+            	path.on("mouseover", function(d) {
             	  	var index = countries.indexOf(d.properties.name);
-            	  	if(index == -1) {
-            	  		return "white";
-            	  	} else {
+            	  	if(index != -1) {
             	  		var country_pisa = data[index];
-            	  		var color_math_index = 3 - parseInt(country_pisa["MATH_INDEX"]);
-            	  		// here is a little confusing, since in the .csv file, 3 means better math performance and 1 means poor math performances
-            	  		//but here the first array in 2D-color-array represents better math performance
-            	  		var color_strength_index = parseInt(country_pisa["RELATION_INDEX"]) - 1;
-            	  		//in .csv file, 1 means strong relation between math performance and social-economic status, that is "less equity"
-            	  		// this is consistent with the 2D-color-array, because the left(small index) means less equity
-            	  		valid_countries.push(d.properties.name); 
-            	  		var color = color_array[color_math_index][color_strength_index];
-            	  		return color;
+	            	  	tooltip.transition()
+	            	  		.duration(200)
+	            	  		.style("opacity", 0.9);
+	            	  	tooltip.html("<strong>Country:</strong> " + country_pisa["CNT"] + "<br>\
+	            	  		<strong>Average math score:</strong> " + Number(country_pisa["MATH_MEAN"]).toFixed(2) + "<br>\
+	            	  		<strong>Math gender gap:</strong> " + Number(country_pisa["MATH_GENDER_GAP"]).toFixed(2)  + "<br>\
+	            	  		<strong>Variance explained by social-economic status(%):</strong> " + Number(country_pisa["strength"]).toFixed(2))
+	            	  		.style("left", (d3.event.pageX - 50) + "px")
+	            	  		.style("top", (d3.event.pageY - 20) + "px");
+	            	  	path.attr("stroke", function(d2) {
+	            	  		if(d == d2) {
+	            	  			return "black";
+	            	  		} else {
+	            	  			return "gray";
+	            	  		}
+	            	  	})
+	            	  	.attr("stroke-width", function(d2) {
+	            	  		if(d == d2) {
+	            	  			return 2;
+	            	  		} else {
+	            	  			return 0.5;
+	            	  		}
+	            	  	});
+
             	  	}
-            	  });
-            	for(var i = 0; i < countries.length; i++) {
-            		if(valid_countries.indexOf(countries[i]) == -1) {
-            			invalid_countries.push(countries[i]);
-            		}
-            	}
-            	console.log("invalid: ",invalid_countries);
+            	  	
+            	});
+            	path.on("mouseout", function(d) {
+            		tooltip.transition()
+            				.duration(200)
+            				.style("opacity", 0);
+            		path.attr("stroke", "gray")
+
+            	});
+            };
+
+            var draw_scatter = function(america_data) {
+            	var scatter_width = 7 / 16 * window_x,
+            		scatter_height = 400;
+            	var margin = {
+            		top: 20,
+            		right: 20,
+            		bottom: 30,
+            		left: 40
+            	};
+            	var svg = d3.select('#scatter_container')
+            				.append("svg")
+            				.attr("width", scatter_width + margin.left + margin.right)
+            				.attr("height", scatter_height + margin.top + margin.bottom)
+            				.append("g")
+            				.attr("class", "scatter")
+            				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            	var x = d3.scaleLinear()
+            			.range([0, scatter_width])
+            			.domain([-4, 4]);
+            	var y = d3.scaleLinear()
+            				.range([scatter_height, 0])
+            				.domain([200, 900]);
+            	var xAxis = d3.axisBottom()
+            					.scale(x);
+            	var yAxis = d3.axisLeft()
+            					.scale(y);
+            	svg.append("g")
+            		.attr("class", "x axis")
+            		.attr("transform", "translate(0," + scatter_height + ")")
+            		.call(xAxis)
+            		.append("text")
+            		.attr("class", "label")
+            		.text("index of social-economic status")
+            		.attr("x", scatter_width)
+            		.attr("y", -6)
+            		.style("text-anchor", "end")
+            		.attr("fill", "black");
+
+            	svg.append("g")
+            		.attr("class", "y axis")
+            		.call(yAxis)
+            		.append("text")
+            		.attr("class", "label")
+            		.attr("transform", "rotate(-90)")
+            		.attr("y", 6)
+            		.attr("dy", "0.7em")
+            		.style("text-anchor", "end")
+            		.text("math score")
+            		.attr("fill", "black");
+
+            	var line = d3.line()
+            				.x(function(d) {
+            					return x(d["ESCS"]);
+            				})
+            				.y(function(d) {
+            					return y(d["predict"]);
+            				});
+            	svg.selectAll("circle")
+            		.data(america_data)
+            		.enter()
+            		.append("circle")
+            		.attr("cx", function(d) {
+            			return x(d["ESCS"]);
+            		})
+            		.attr("r", 3.5)
+            		.attr("cy", function(d) {
+            			return y(d["MATH"]);
+            		})
+            		.attr("fill", "lightBlue")
+            		.attr("stroke", "gray")
+            		.attr("stroke-width", 0.7);
+            	svg.append('path')
+            		.datum(america_data)
+            		.attr("class", "line")
+            		.attr("d", line);
+            	svg.append("text")
+            		.attr("x", margin.left * 2)
+            		.attr("y", 20)
+            		.text("Relationship between math score and social-economic status in USA*")
+            		.style("font-size", "16px")
+            		.style("font-weight", "bold");
+            	d3.select("#scatter_container")
+            		.append("div")
+            		.html('*This scatterplot(using 500 samples of USA dataset) explains how the "equity" was calculated. We could get a linear model, predicting math score using index of social-economic status. And the strength of these two variables are represented by the r-squared value, i.e., the math score variance explained by social-economic status. If the relationship is strong, then we would think there was less equity.')
+            		// .attr("x", margin.left)
+            		// .attr("y", scatter_height + margin.top * 2)
             };
 
             d3.csv("INFO_PISA2012.csv", fill_countries);
+            d3.csv("america_pisa_sample.csv", draw_scatter);
+            var story = [
+            	"",
+            	"1. Latin America's mean math score is not good.",
+            	"2. China/South Korea/Canda all have good math performance and great equity in education.",
+            	"3. Many European countries have good math performance, but the equity is not that good.",
+            	"4. US performs average, but two states of US, Connecticut and Massachusetts have better math score, but less equity than the whole country."
+            ]
+            d3.select('#conclusion')
+            	.selectAll("p")
+            	.data(story).enter()
+            	.append("p")
+            	.text(function(d) { return d;});
 
 
 		};
