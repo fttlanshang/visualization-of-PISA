@@ -9,7 +9,7 @@
 		body {
 			font-family: 'Nunito', sans-serif;
 		}
-		h2 {
+		h2, h4 {
 			text-align: center;
 		}
 		main {
@@ -76,7 +76,8 @@
 	</style>
 </head>
 <body>
-	<h2>Visualization of PISA in 2012</h2>
+	<h2>How well can math score be predicted by social-economic status in different countries?</h2>
+	<h4>-- Using PISA 2012 to Explore Education and Equity</h4>
 	<main>
 		<div class="left">
 			<div id="grid"></div>
@@ -278,9 +279,12 @@
             		.attr("stroke-width", 0.5)
             	  	.attr("fill", function(d) {
 	            	  	var index = countries.indexOf(d.properties.name);
-	            	  	if(index == -1) {
-	            	  		return "white";
+	            	  	if(index == -1 && d.properties.name != "Chinese Taipei") {
+            	  			return "white";
 	            	  	} else {
+	            	  		if(d.properties.name == "Chinese Taipei") {
+	            	  			index = countries.indexOf("China");
+	            	  		}
 	            	  		var country_pisa = data[index];
 	            	  		var color_math_index = 3 - parseInt(country_pisa["MATH_INDEX"]);
 	            	  		// here is a little confusing, since in the .csv file, 3 means better math performance and 1 means poor math performances
@@ -435,17 +439,22 @@
             d3.csv("INFO_PISA2012.csv", fill_countries);
             d3.csv("america_pisa_sample.csv", draw_scatter);
             var story = [
-            	"",
-            	"1. Latin America's mean math score is not good.",
-            	"2. China/South Korea/Canda all have good math performance and great equity in education.",
-            	"3. Many European countries have good math performance, but the equity is not that good.",
-            	"4. US performs average, but two states of US, Connecticut and Massachusetts have better math score, but less equity than the whole country."
+            	"PISA assesses the extent to which 15-year-old students have acquired key knowledge and skills that are essential for full participation in modern societies. And we mainly explore the strength of relationship between math score and social-economic status in more than 60 countries.",
+            	"The countries are divided into 9 groups due to their math score and strength of relationship",
+            	"1. The mean math score of Latin America was not good.",
+            	"2. China/South Korea/Japan/Canda all had good math performance and great equity in education.",
+            	"3. Many European countries had good math performance, but the equity was not that great.",
+            	"4. Two states of US, Connecticut and Massachusetts had better math score than the whole country, but less equity",
+            	"source: <a link='http://www.oecd.org/pisa/pisaproducts/datavisualizationcontest.htm'>PISA 2012</a>",
+            	"*There were four main cities separately tested in China, including Shanghai/Hong Kong/Macao/Taipei. Since the cities were hardly seen on the map, so I averaged the four cities to represent China.",
+            	"<hr>"
+
             ]
             d3.select('#conclusion')
             	.selectAll("p")
             	.data(story).enter()
             	.append("p")
-            	.text(function(d) { return d;});
+            	.html(function(d) { return d;});
 
 
 		};
