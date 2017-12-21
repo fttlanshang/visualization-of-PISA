@@ -25,9 +25,7 @@
 		}
 		div.left {
 			position: absolute;
-			/*float: left;*/
 			display: block;
-			/*position: relative;*/
 			left: 0;
 			width: calc(9 / 16 * 100vw);
 		}
@@ -35,7 +33,6 @@
 			border: 1px solid black;
 		}
 		div.right {
-			/*float: right;*/
 			position: absolute;
 			left: calc(9.5 / 16 * 100vw);
 			display: block;
@@ -68,11 +65,6 @@
 		circle {
 			opacity: 0.9;
 		}
-		#conclusion {
-			/*clear: both;*/
-			/*float: left;*/
-		}
-
 	</style>
 </head>
 <body>
@@ -88,8 +80,6 @@
 		<div class="right">
 			<div id="barchart_container"></div>
 		</div>
-		
-		
 	</main>
 	<script>
 		//reference: https://stackoverflow.com/questions/16265123/resize-svg-when-window-is-resized-in-d3-js
@@ -104,7 +94,7 @@
 		// 					["#bed0f4", "#8ba6e9", "#0f61a0"],
 		// 					// ["#fba165", "#f65c40","#bd2828"]];
 		const color_array = [["rgb(233, 0, 90)", "rgb(161, 0, 89)", "rgb(0, 0, 89)"], 
-							// this line is for high math performance
+							// this first line is for high math performance
 							["rgb(236, 165, 190)", "rgb(160, 165, 190)", "rgb(0, 166, 189)"],
 							["rgb(223, 223, 223)", "rgb(161, 228, 223)", "rgb(0, 219, 188)"]]//the last line is for low math performance
 		var generate_grid_data = function() {
@@ -207,7 +197,6 @@
             			.attr("class", "map");
 
             // can use other projections as well!!
-            // need to change here!!!!!!!!!!!!!!!
             var projection = d3.geoMercator()
             					.scale(120)
           						.translate([map_width / 2, map_height / 1.4]);
@@ -247,6 +236,7 @@
 			        	.attr("height", barheight - 2.5)
 			        	.attr("width", function(d) { return x(d["MATH_MEAN"]); })
 			        	.attr("fill", "#c9a288");
+			        // this text is for labeling countries
 			        bar.append("text")
 			        	.attr("x", -100)
 			        	.attr("y", barheight / 2)
@@ -254,6 +244,7 @@
 			        	.text(function(d) { return d["CNT"]; })
 			        	.style("font-size", "12px")
 			        	.style("text-anchor", "right");
+			        // this text is for math mean score
 			        bar.append("text")
 			        	.attr("x", function(d) { return x(d["MATH_MEAN"]) - 50;})
 			        	.attr("y", barheight / 2)
@@ -261,6 +252,7 @@
 			        	.text(function(d){ return Number(d["MATH_MEAN"]).toFixed(2);})
 			        	.style("font-size", "12px")
 			        	.style("color", "white");
+			        // this is for the title of this barchart
 			        barchart.append("text")
 			        	.attr("x", 100)
 			        	.attr("y", 20)
@@ -271,9 +263,8 @@
             	var countries = data.map(function(d) {
             		return d["CNT"];
             	});
-            	var invalid_countries = [];
-            	var valid_countries = [];
-            	// now I want to figure out the invalid country names.
+            	// var invalid_countries = [];
+            	// var valid_countries = [];
             	var path = svg.selectAll("path")
             		.attr("stroke", "gray")
             		.attr("stroke-width", 0.5)
@@ -292,7 +283,7 @@
 	            	  		var color_strength_index = parseInt(country_pisa["RELATION_INDEX"]) - 1;
 	            	  		//in .csv file, 1 means strong relation between math performance and social-economic status, that is "less equity"
 	            	  		// this is consistent with the 2D-color-array, because the left(small index) means less equity
-	            	  		valid_countries.push(d.properties.name); 
+	            	  		// valid_countries.push(d.properties.name); 
 	            	  		var color = color_array[color_math_index][color_strength_index];
 	            	  		return color;
             	  		}
@@ -405,6 +396,7 @@
             				.y(function(d) {
             					return y(d["predict"]);
             				});
+            	//add data points on the svg
             	svg.selectAll("circle")
             		.data(america_data)
             		.enter()
@@ -419,21 +411,22 @@
             		.attr("fill", "lightBlue")
             		.attr("stroke", "gray")
             		.attr("stroke-width", 0.7);
+            	// add regression line on the svg
             	svg.append('path')
             		.datum(america_data)
             		.attr("class", "line")
             		.attr("d", line);
+            	//title
             	svg.append("text")
             		.attr("x", margin.left * 2)
             		.attr("y", 20)
             		.text("Relationship between math score and social-economic status in USA*")
             		.style("font-size", "16px")
             		.style("font-weight", "bold");
+            	// add explaination for this scatterplot
             	d3.select("#scatter_container")
             		.append("div")
-            		.html('*This scatterplot(using 500 samples of USA dataset) explains how the "equity" was calculated. We could get a linear model, predicting math score using index of social-economic status. And the strength of these two variables are represented by the r-squared value, i.e., the math score variance explained by social-economic status. If the relationship is strong, then we would think there was less equity.')
-            		// .attr("x", margin.left)
-            		// .attr("y", scatter_height + margin.top * 2)
+            		.html('*This scatterplot(using 500 samples of USA dataset) explains how the "equity" was calculated. We could get a linear model, predicting math score using index of social-economic status. And the strength of these two variables are represented by the r-squared value, i.e., the math score variance explained by social-economic status. If the relationship is strong, then we would think there was less equity.');
             };
 
             d3.csv("INFO_PISA2012.csv", fill_countries);
@@ -455,8 +448,6 @@
             	.data(story).enter()
             	.append("p")
             	.html(function(d) { return d;});
-
-
 		};
 		d3.json("world_countries.json", draw);
 	</script>
