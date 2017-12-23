@@ -6,29 +6,31 @@ This visualization used PISA dataset, which assessed the extent to which 15-year
 ### Design
 
 - story I want to tell: 
-	- Different countries varied in math performance and the influence of social-economic status to math performance. Like, Peru and some Latin American countries had bad math performance and less equity compared with other countries. And social-economic status is an important factor in predicting performance. 
+	- Different countries varied in math performance. And the influence of social-economic status to math performance was different in each country. Like, Peru and some Latin American countries had bad math performance and less equity compared with other countries. 
 	- I tried to express the same idea as Figure II.1.2 on [PISA 2012 Results: Excellence Through Equity: Giving Every Student the Chance to Succeed (Volume II)](http://www.oecd.org/pisa/keyfindings/pisa-2012-results-volume-ii.htm), which was in the form of a scatterplot.
-- chart type: I choose to use a choropleth map for the main part and I was inspired by the graphs in [this article](http://uk.businessinsider.com/income-and-racial-inequality-maps-2015-5?r=US&IR=T). Also, I added one barchart to show exactly how students behaved in each country and one scatterplot to explain how the "equity" was calculated.
+- chart type: I choose to use a choropleth map for the main part and I was inspired by the graphs in [this article](http://uk.businessinsider.com/income-and-racial-inequality-maps-2015-5?r=US&IR=T). Also, I added two barcharts to show exactly how students behaved and how strong the relationship was in each country. Further, a scatterplot to explain how the "equity" was calculated.
 - visual encodings: 
 	- choropleth map:
 		- map: showing geological information
 		- color: showing both math performance and variance explained by social-economic status
 	- barchart:
-		- bar width(x axis): showing the mean math score in each country
+		- bar width(x axis): showing the mean math score or the strength of the relationship in each country
 		- y axis: different countries
 	- scatterplot:
 		- x axis: the index of social-economic status
 		- y axis: the mean math score
 		- line: the regresssion line
-- interaction: When hovering on one country, then relative information would pop up, including mean math score, strength of relationship between math score and social-economic status.
-- changes after collecting feedback
+- interaction: When hovering on one country, then relative information would pop up, including mean math score, strength of relationship between math score and social-economic status. People can also switch between the two barcharts.
+- changes after collecting feedback：
+	- Add another barchart showing strength of the relationship. I also added buttons to allow users switch between these two barcharts easily.
+	- Add average line to barcharts.
 
 ### Feedback
-1. feedback1
-2. feedback2
+1. Add the barchart of strength of the relationship, since there were two dimensions on the map. 
+2. Add average line to the barchart.
 
 ### Resources
-- [inspiration], already linked(http://uk.businessinsider.com/income-and-racial-inequality-maps-2015-5?r=US&IR=T)
+- [inspiration](http://uk.businessinsider.com/income-and-racial-inequality-maps-2015-5?r=US&IR=T), already linked
 - [some visualizations others made using this dataset](http://mi2.mini.pw.edu.pl:8080/SmarterPoland/PISAcontest/#Dataset)
 - [pisa 2012 report about equity](http://www.oecd.org/pisa/keyfindings/pisa-2012-results-volume-ii.htm), I tried to express the same idea as Figure II.1.2 which was in the form of a scatterplot.
 - [how to calculate weighted average](http://pbpython.com/weighted-average.html)

@@ -152,6 +152,10 @@ def draw_scatter_plot(var):
 
 # draw_scatter_plot('MATH_GENDER_GAP')
 
+#calculate average for math score and strength
+
+
+
 ## divide these countries into 9 groups according to relative rank
 ## position by math_mean and relation_strength
 INFO["MATH_INDEX"] = 0
@@ -182,6 +186,15 @@ INFO = INFO.sort_values("MATH_MEAN", ascending = False)
 INFO.iloc[0:first_slice,5] = 3
 INFO.iloc[first_slice:second_slice, 5] = 2
 INFO.iloc[second_slice:third_slice, 5] = 1
+
+#calculate average for math score and strength
+mean_math_score = INFO["MATH_MEAN"].mean()
+mean_strength = INFO["strength"].mean()
+INFO = INFO.append({
+	"MATH_MEAN": mean_math_score, 
+	"strength": mean_strength,
+ 	"CNT": "AVERAGE"
+}, ignore_index=True)
 
 INFO.to_csv("INFO_PISA2012.csv")
 
