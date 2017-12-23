@@ -28,6 +28,8 @@ This visualization used PISA dataset, which assessed the extent to which 15-year
 ### Feedback
 1. Add the barchart of strength of the relationship, since there were two dimensions on the map. 
 2. Add average line to the barchart.
+3. Some colors in the color matrix are a little harder to distinguish.
+4. Can't get what the countries in white color mean? Actually, the survey only took in around 60-70 countries.
 
 ### Resources
 - [inspiration](http://uk.businessinsider.com/income-and-racial-inequality-maps-2015-5?r=US&IR=T), already linked
